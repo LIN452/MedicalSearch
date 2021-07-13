@@ -10,6 +10,11 @@ parser.add_argument('type')
 parser.add_argument('region')
 
 maxValue = 1000
+HOSPITAL = 1
+DOCTOR = 2
+OFFICE = 3
+ILLNESS = 4
+
 class Search(Resource):
     def get(self):
         
@@ -21,7 +26,6 @@ class Search(Resource):
         if region != "":
             key = str(region) +" "+str(key)
         
-       # if type == 4:
         query = {
             "query": {
                 "query_string": {
@@ -36,9 +40,22 @@ class Search(Resource):
                 }
             },
             "size":maxValue
-        }  
+        } 
 
-        response = requests.get("http://10.192.166.110:9200/_search",json=query).json()
+        url = "http://10.192.166.110:9200"
+        if type == DOCTOR:
+            url = url + "/doctor"
+        '''
+        if type == HOSPITAL:
+            url = url+"/_search"
+        if type == OFFICE:
+            url = url+"/_search"
+        if type == ILLNESS:
+            url = url +"/_search"
+       # if type == 4:
+         '''
+        url = url + "/_search"
+        response = requests.get(url,json=query).json()
         res = {}
         reslist=[]
         total = min(response['hits']["total"]["value"],maxValue)
