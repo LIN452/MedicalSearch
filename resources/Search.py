@@ -6,14 +6,15 @@ import requests
 
 parser = reqparse.RequestParser()
 parser.add_argument('key')
-parser.add_argument('type')
-parser.add_argument('region')
+parser.add_argument('type',type=int,default=0)
+parser.add_argument('region',default="")
 
 maxValue = 1000
+UNLIMITED = 0
 HOSPITAL = 1
 DOCTOR = 2
 OFFICE = 3
-ILLNESS = 4
+DISEASE = 4
 
 class Search(Resource):
     def get(self):
@@ -29,32 +30,46 @@ class Search(Resource):
         query = {
             "query": {
                 "query_string": {
-                    "query": key,
-                    "default_field": "desc"
+                    "query": key
+                    
                 }
             },
             "highlight": {
                 "fields" : {
-                    "desc" : {}
-                    
                 }
             },
             "size":maxValue
         } 
 
+        fieldlist = []
         url = "http://10.192.166.110:9200"
+        
         if type == DOCTOR:
             url = url + "/doctor"
-        '''
+            fieldlist=['doctor_name','skill','doctor_intro','office_name2','office_name','hospital_name','hospital_address']
+        
         if type == HOSPITAL:
-            url = url+"/_search"
+            url = url+"/hospital"
+            fieldlist=['hospital_address','hospital_name','label_1','label_2','add','intro']
+        
         if type == OFFICE:
-            url = url+"/_search"
-        if type == ILLNESS:
-            url = url +"/_search"
-       # if type == 4:
-         '''
+            url = url+"/office"
+            fieldlist=['office_name','office_name2','hospital_name']
+
+        if type == DISEASE:
+            url = url +"/disease"
+            fieldlist=['name','desc','cause','symptom']
+
+        if type == UNLIMITED:
+            fieldlist=['doctor_name','skill','doctor_intro','office_name2','office_name','hospital_name','hospital_address']+['hospital_address','hospital_name','label_1','label_2','add','intro']+['office_name','office_name2','hospital_name']+['name','desc','cause','symptom']
+            fieldlist = list(set(fieldlist)) #去重
+
         url = url + "/_search"
+
+        query["query"]["query_string"]["fields"]=fieldlist
+        for item in fieldlist:
+            query["highlight"]["fields"][item]={}
+
         response = requests.get(url,json=query).json()
         res = {}
         reslist=[]
@@ -62,8 +77,15 @@ class Search(Resource):
 
         res["total"]=total
         
+       
         for hit in response['hits']["hits"]:
-            item = {"info":hit["_source"],"highlight":hit["highlight"]}
+            item = {"info":hit["_source"]}
+            item["info"]["type"]=hit["_type"]
+            if "name" in hit["highlight"]:
+                item["info"]["name_origin"]=item["info"]["name"]
+            for singleItem in hit["highlight"]:
+                item["info"][singleItem]=''.join(hit["highlight"][singleItem])
+            
             reslist.append(item)
 
         res["total"]=total

@@ -1,84 +1,54 @@
-from flask import Flask
-from flask_restful import reqparse, abort, Api, Resource
-from werkzeug.sansio.response import Response
-from werkzeug.wrappers.request import PlainRequest, Request
+from flask_restful import reqparse, Resource
 import requests
 
 parser = reqparse.RequestParser()
-parser.add_argument('id')
+parser.add_argument('key')
 
-url_prefix = "http://192.168.0.116:9200/"
+url_prefix = "http://10.192.166.110:9200/"
 
-class FindDisease(Resource):
-    def get(self):
+
+def find_disease(key):
+    url = url_prefix + "disease/disease/" + key
+    response = requests.get(url).json()
+    return response
+
+
+def find_hospital(key):
+    url = url_prefix + "hospital/hospital/" + key
+    response = requests.get(url).json()
+    return response
+
+
+def find_doctor(key):
+    url = url_prefix + "doctor/doctor/" + key
+    response = requests.get(url).json()
+    return response
+
+
+def find_office(key):
+    url = url_prefix + "office/office/" + key
+    response = requests.get(url).json()
+    return response
+
+
+class FindOne(Resource):
+
+    def get(self, get_type):
         args = parser.parse_args()
-        key = args['id']
+        key = args['key']
+        if get_type not in ["1", "2", "3", "4"]:
+            return "illegal url"
 
-        url = url_prefix + "disease/disease/" + key
-
-        response = requests.get(url).json()
-        print(response)
+        find_by_type = {
+            '1': find_hospital(key),
+            '2': find_doctor(key),
+            '3': find_office(key),
+            '4': find_disease(key),
+        }
 
         res = {}
-        if not response["found"]:
-            res["found"] = False
-        else:
-            res["found"] = True
-            res["resp"] = {"info": response["_source"]}
+        response = find_by_type[get_type]
 
-        return res
-
-class FindHospital(Resource):
-    def get(self):
-        args = parser.parse_args()
-        key = args['id']
-
-        url = url_prefix + "hospital/hospital/" + key
-
-        response = requests.get(url).json()
-        print(response)
-
-        res = {}
-        if not response["found"]:
-            res["found"] = False
-        else:
-            res["found"] = True
-            res["resp"] = {"info": response["_source"]}
-
-        return res
-
-class FindOffice(Resource):
-    def get(self):
-        args = parser.parse_args()
-        key = args['id']
-
-        url = url_prefix + "office/office/" + key
-
-        response = requests.get(url).json()
-        print(response)
-
-        res = {}
-        if not response["found"]:
-            res["found"] = False
-        else:
-            res["found"] = True
-            res["resp"] = {"info": response["_source"]}
-
-        return res
-
-
-
-class FindDoctor(Resource):
-    def get(self):
-        args = parser.parse_args()
-        key = args['id']
-
-        url = url_prefix + "doctor/doctor/" + key
-
-        response = requests.get(url).json()
-        print(response)
-
-        res = {}
         if not response["found"]:
             res["found"] = False
         else:
