@@ -6,8 +6,10 @@ import requests
 
 parser = reqparse.RequestParser()
 parser.add_argument('key')
-parser.add_argument('type',type=int,default=0)
-parser.add_argument('region',default="")
+parser.add_argument('type', type=int, default=0)
+parser.add_argument('region', default="")
+parser.add_argument('pageNum', type=int, default=1)
+parser.add_argument('pageSize', type=int, default=10)
 
 maxValue = 1000
 UNLIMITED = 0
@@ -23,6 +25,8 @@ class Search(Resource):
         key = args['key']
         type = args['type']
         region = args['region']
+        pageNum = args['pageNum']
+        pageSize = args['pageSize']
 
         if region != "":
             key = str(region) +" "+str(key)
@@ -76,9 +80,8 @@ class Search(Resource):
         total = min(response['hits']["total"]["value"],maxValue)
 
         res["total"]=total
-        
-       
-        for hit in response['hits']["hits"]:
+
+        for hit in response['hits']["hits"][(pageNum-1)*pageSize:pageNum*pageSize]:
             item = {"info":hit["_source"]}
             item["info"]["type"]=hit["_type"]
             if "name" in hit["highlight"]:
