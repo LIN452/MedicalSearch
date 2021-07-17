@@ -28,13 +28,21 @@ class Search(Resource):
         pageNum = args['pageNum']
         pageSize = args['pageSize']
 
-        if region != "":
-            key = str(region) +" "+str(key)
+       
         
         query = {
             "query": {
-                "query_string": {
-                    "query": key
+                
+                "bool":{
+                    "must":{
+                        "match":{}
+                    },
+                    "should":{
+                        "query_string": {
+                            "query": key
+                            
+                        }
+                    }
                     
                 }
             },
@@ -45,6 +53,13 @@ class Search(Resource):
             "size": pageSize,
             "from": (pageNum-1)*pageSize,
         } 
+
+        if region != "":
+            region = region.replace('市','')
+            region = region.replace('省','')
+            region = region.replace('区','')
+            
+            query['query']['bool']['must']['match']['hospital_address']=region
 
         fieldlist = []
         url = "http://10.192.166.110:9200"
@@ -71,7 +86,7 @@ class Search(Resource):
 
         url = url + "/_search"
 
-        query["query"]["query_string"]["fields"]=fieldlist
+        query["query"]['bool']['should']["query_string"]["fields"]=fieldlist
         for item in fieldlist:
             query["highlight"]["fields"][item]={}
 
