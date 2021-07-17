@@ -39,10 +39,11 @@ class Search(Resource):
                 }
             },
             "highlight": {
-                "fields" : {
+                "fields": {
                 }
             },
-            "size":maxValue
+            "size": pageSize,
+            "from": (pageNum-1)*pageSize,
         } 
 
         fieldlist = []
@@ -77,13 +78,14 @@ class Search(Resource):
         response = requests.get(url,json=query).json()
         res = {}
         reslist=[]
-        total = min(response['hits']["total"]["value"],maxValue)
-
+        #total = min(response['hits']["total"]["value"],maxValue)
+        total = response['hits']["total"]["value"]
         res["total"]=total
 
-        for hit in response['hits']["hits"][(pageNum-1)*pageSize:pageNum*pageSize]:
+        #for hit in response['hits']["hits"][(pageNum-1)*pageSize:pageNum*pageSize]:
+        for hit in response['hits']["hits"]:
             item = {"info":hit["_source"]}
-            item["info"]["type"]=hit["_type"]
+            item["info"]["type"]=hit["_index"]
             if "name" in hit["highlight"]:
                 item["info"]["name_origin"]=item["info"]["name"]
             for singleItem in hit["highlight"]:
@@ -92,7 +94,9 @@ class Search(Resource):
             reslist.append(item)
 
         res["total"]=total
+        res["time"]=response["took"]
         res["reslist"]=reslist
+
         return res
 
     '''def post(self):
