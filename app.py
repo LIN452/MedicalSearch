@@ -20,6 +20,4 @@ api.add_resource(Search, '/search')
 api.add_resource(FindOne, '/findOne/<get_type>')
 api.add_resource(CompletionSuggest, '/suggest/<get_type>')
 if __name__ == '__main__':
-
     app.run(host='0.0.0.0',debug=True)
-
