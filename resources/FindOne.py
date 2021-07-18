@@ -4,29 +4,29 @@ import requests
 parser = reqparse.RequestParser()
 parser.add_argument('key')
 
-url_prefix = "http://10.192.166.110:9200/"
+url_prefix = "http://localhost:9200/"
 
 
 def find_disease(key):
-    url = url_prefix + "disease/disease/" + key
+    url = url_prefix + "disease/_doc/" + key
     response = requests.get(url).json()
     return response
 
 
 def find_hospital(key):
-    url = url_prefix + "hospital/hospital/" + key
+    url = url_prefix + "hospital/_doc/" + key
     response = requests.get(url).json()
     return response
 
 
 def find_doctor(key):
-    url = url_prefix + "doctor/doctor/" + key
+    url = url_prefix + "doctor/_doc/" + key
     response = requests.get(url).json()
     return response
 
 
 def find_office(key):
-    url = url_prefix + "office/office/" + key
+    url = url_prefix + "office/_doc/" + key
     response = requests.get(url).json()
     return response
 

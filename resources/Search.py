@@ -33,11 +33,11 @@ class Search(Resource):
         query = {
             "query": {
                 
-                "bool":{
-                    "must":{
-                        "match":{}
+                "bool": {
+                    "must": {
+                        "match": {}
                     },
-                    "should":{
+                    "should": {
                         "query_string": {
                             "query": key
                             
@@ -55,14 +55,14 @@ class Search(Resource):
         } 
 
         if region != "":
-            region = region.replace('市','')
-            region = region.replace('省','')
-            region = region.replace('区','')
+            region = region.replace('市', '')
+            region = region.replace('省', '')
+            region = region.replace('区', '')
             
-            query['query']['bool']['must']['match']['hospital_address']=region
+            query['query']['bool']['must']['match']['hospital_address'] = region
 
         fieldlist = []
-        url = "http://10.192.166.110:9200"
+        url = "http://localhost:9200"
         
         if type == DOCTOR:
             url = url + "/doctor"
@@ -90,9 +90,10 @@ class Search(Resource):
         for item in fieldlist:
             query["highlight"]["fields"][item]={}
 
-        response = requests.get(url,json=query).json()
+        response = requests.get(url, json=query).json()
         res = {}
         reslist=[]
+        print(response)
         #total = min(response['hits']["total"]["value"],maxValue)
         total = response['hits']["total"]["value"]
         res["total"]=total
