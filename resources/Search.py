@@ -27,8 +27,9 @@ class Search(Resource):
         region = args['region']
         pageNum = args['pageNum']
         pageSize = args['pageSize']
-
-       
+        
+        if key == "":
+            key = region
         
         query = {
             "query": {
@@ -64,26 +65,26 @@ class Search(Resource):
             #query['query']['bool']['must'].['match']={"hospital_address":region}
 
         fieldlist = []
-        url = "http://10.192.14.93:9200"
+        url = "http://10.192.105.176:9200"
         
         if type == DOCTOR:
             url = url + "/doctor"
-            fieldlist=['doctor_name','skill','doctor_intro','office_name2','office_name','hospital_name','hospital_address']
+            fieldlist=['doctor_name','skill','doctor_intro','office_name2','office_name','hospital_name','hospital_address','doctor_name.pinyin']
         
         if type == HOSPITAL:
             url = url+"/hospital"
-            fieldlist=['hospital_address','hospital_name','label_1','label_2','add','intro']
+            fieldlist=['hospital_address','hospital_name','label_1','label_2','add','intro','hospital_name.pinyin']
         
         if type == OFFICE:
             url = url+"/office"
-            fieldlist=['office_name','office_name2','hospital_name']
+            fieldlist=['office_name','office_name2','hospital_name','office_name.pinyin','hospital_address']
 
         if type == DISEASE:
             url = url +"/disease"
-            fieldlist=['name','desc','cause','symptom']
+            fieldlist=['name','desc','cause','symptom','name.pinyin']
 
         if type == UNLIMITED:
-            fieldlist=['doctor_name','skill','doctor_intro','office_name2','office_name','hospital_name','hospital_address']+['hospital_address','hospital_name','label_1','label_2','add','intro']+['office_name','office_name2','hospital_name']+['name','desc','cause','symptom']
+            fieldlist=['doctor_name','skill','doctor_intro','doctor_name.pinyin','office_name2','hospital_name.pinyin','office_name','office_name.pinyin','hospital_name','hospital_address','name.pinyin']+['hospital_address','hospital_name','label_1','label_2','add','intro']+['office_name','office_name2','hospital_name']+['name','desc','cause','symptom']
             fieldlist = list(set(fieldlist)) #去重
 
         url = url + "/_search"
@@ -91,11 +92,11 @@ class Search(Resource):
         query["query"]['bool']['must'][0]['query_string']["fields"]=fieldlist
         for item in fieldlist:
             query["highlight"]["fields"][item]={}
-        #print(query)
+        print(query)
         response = requests.get(url,json=query).json()
         res = {}
         reslist=[]
-        #print(response)
+        print(response)
         total = min(response['hits']["total"]["value"],maxValue)
 
         res["total"]=total
@@ -104,7 +105,7 @@ class Search(Resource):
         for hit in response['hits']["hits"]:
             item = {"info":hit["_source"]}
             item["info"]["type"]=hit["_index"]
-            if "name" in hit["highlight"]:
+            if "name" in item["info"]:
                 item["info"]["name_origin"]=item["info"]["name"]
             for singleItem in hit["highlight"]:
                 item["info"][singleItem]=''.join(hit["highlight"][singleItem])

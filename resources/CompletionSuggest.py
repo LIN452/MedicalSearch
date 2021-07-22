@@ -6,7 +6,7 @@ import requests
 parser = reqparse.RequestParser()
 parser.add_argument('key')
 
-url_prefix = "http://localhost:9200/"
+url_prefix = "http://10.192.105.176:9200/"
 
 
 def suggest_disease(query):
@@ -52,7 +52,8 @@ class CompletionSuggest(Resource):
                     "prefix": key,
                     "completion": {
                         "field": "",
-                        "analyzer": "ik_smart"
+                        "analyzer": "ik_smart",
+                        "skip_duplicates": True
                     }
                 }
             }
